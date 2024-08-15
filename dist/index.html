@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+
+    <script src="js/mrz-worker.bundle-min-wrapped.js"></script>
+<script src="js/demo.bundle-min.js"></script>
+    <style>
+
+      /* html, body {
+        padding: 0;
+        margin: 0;
+      }
+
+      pre {
+        font-size: small;
+      }
+
+      input {
+        margin-top: 1em;
+      }
+
+      img {
+        max-width: 60%;
+        margin: 1em;
+      }
+*/
+      div.progress.visible {
+        visibility: visible;
+      }
+
+      div.progress {
+        visibility: hidden;
+        margin: 0;
+        padding: 0;
+        position: fixed;
+        top: 0;
+        background-color: white;
+        width: 100%;
+        height: 100%;
+      }
+
+      div.gradient {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        display: fixed;
+        top: 0;
+        left: 0;
+
+  
+        background: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%); 
+        background: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 100%); 
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#52000000',GradientType=1 ); 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      div.progress-wrapper {
+        font-size: 2em;
+        padding: 2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        width: 40%;
+        border: 2px solid black;
+        background: white;
+        box-shadow: 0.5em 0.5em 0.5em rgba(0,0,0,0.25);
+        border-radius: 0.2em;
+
+      }
+
+      progress {
+        width: 100%;
+        margin: 0.2em;
+      }
+
+      div.wrapper {
+        padding: 5px;
+      }
+
+      div.wrapper, div.wrapper > div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+/*
+      #parsed .error {
+        padding: 0px 1em;
+        max-width: 60%;
+
+      }
+
+      div#detected{
+        margin-bottom: 1em;
+        flex-direction: column-reverse;
+      }
+
+      canvas {
+        max-width: 100%;
+        margin: 5px;
+      }
+
+      canvas[title=crop] {
+        max-width: 100%;
+        margin: 0px 5px;
+      }
+
+      @media screen and (orientation: landscape) {
+      }
+
+      @media screen and (orientation: portrait) {
+      } */
+
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+body{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  
+}
+.drag-area{
+  border: 2px dashed #fff;
+  height: fit-content;
+  padding: 40px;
+  width: 100%;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: #fff;
+  border: 2px dashed #c1c1c1;
+}
+.drag-area.active{
+  border: 2px solid #191919;
+}
+.drag-area .icon{
+  font-size: 100px;
+  color: #191919;
+}
+.drag-area header{
+  font-size: 30px;
+  font-weight: 500;
+  color: #191919;
+}
+.drag-area span{
+  font-size: 25px;
+  font-weight: 500;
+  color: #191919;
+  margin: 10px 0 15px 0;
+}
+.scanner-btn{
+  padding: 10px 25px;
+  font-size: 20px;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  background: #3968bf;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.drag-area img{
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+/***********/
+.main-scanner-container{
+  width: 50%;
+  height: 90%;
+  background-color: #f3f5f8;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.extra-info-description{
+  color: #7E8299;
+  margin-top: 30px;
+}
+
+.scanner-btns-wrapper{
+  margin-top: 10px;
+}
+
+.output-wrapper{
+  display: flex;
+  flex-direction: column;
+}
+
+
+    </style>
+  </head>
+  <body>
+    <!-- <div class="wrapper"> -->
+      <!-- <div class="input"> -->
+        <!-- <input type="file" id="photo" name="photo" accept="image/png, image/jpeg"/> -->
+      <!-- </div> -->
+      <!-- <div class="image"> -->
+        <!-- <img id="image"></img> -->
+    <!-- </div> -->
+      <!-- <div id="parsed"></div>
+      <div id="detected"></div> -->
+    <!-- </div> -->
+
+
+    <!-- <div class="progress">
+      <div class="gradient">
+        <div class="progress-wrapper">
+          <div class="progress-text"></div>
+          <progress></progress>
+        </div>
+      </div>
+    </div> -->
+
+
+    <div class="main-scanner-container">
+      <div class="drag-area">
+        <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <header>Drag & Drop to Upload File OR</header>
+        <div class="scanner-btns-wrapper">
+          <button id="browseBtn" class="scanner-btn">Browse File</button>
+          <button id="takePictureBtn" class="scanner-btn">Take Picture</button>
+        </div>
+    
+        <div class="extra-info-description">
+          Supports: JPEG, JPG, PNG
+        </div>
+    
+        <input type="file" hidden id="photo" name="photo" accept="image/png, image/jpeg, image/jpg" />
+      </div>
+      <div class="output-wrapper">
+        <div id="parsed"></div>
+        <div id="detected"></div>
+        <!-- Video element for live camera preview -->
+    <video id="video" width="320" height="240" autoplay style="display: none;"></video>
+    <!-- Button to capture the photo -->
+    <button id="capture" style="display: none;" class="scanner-btn">Capture</button>
+    <!-- Canvas element for taking the snapshot -->
+    <canvas id="canvas" style="display: none;" class="scanner-btn"></canvas>
+    
+      </div>
+    </div>
+    
+    
+    <script>
+      const dropArea = document.querySelector(".drag-area"),
+            dragText = dropArea.querySelector("header"),
+            browseButton = document.querySelector("#browseBtn"),
+            takePictureButton = document.querySelector("#takePictureBtn"),
+            input = document.querySelector("#photo"),
+            video = document.querySelector("#video"),
+            canvas = document.querySelector("#canvas"),
+            captureButton = document.querySelector("#capture");
+
+            
+      let file; // глобальная переменная для хранения файла
+    
+      browseButton.onclick = () => {
+        input.click(); // клик по input при нажатии на "Browse File"
+      }
+    
+      input.addEventListener("change", function(){
+        file = this.files[0];
+        dropArea.classList.add("active");
+        // showFile(); // вызов функции показа файла
+      });
+    
+      // Активируем камеру при нажатии на кнопку "Take Picture"
+      takePictureButton.onclick = () => {
+        video.style.display = 'block'
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then((stream) => {
+            video.srcObject = stream;
+            video.style.display = "block";
+            captureButton.style.display = "block";
+          })
+          .catch((err) => {
+            console.error("Error accessing camera: ", err);
+          });
+      }
+    
+      // Снимаем фото при нажатии на "Capture"
+      captureButton.onclick = () => {
+    const context = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      file = new File([blob], "photo.png", { type: "image/png" });
+
+      // Создаем объект DataTransfer для манипуляции с input[type="file"]
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      input.files = dataTransfer.files; // Устанавливаем файл в input[type="file"]
+
+      // Эмулируем событие change, чтобы обработчик считал, что файл был добавлен через интерфейс
+      const event = new Event('change', { bubbles: true });
+      input.dispatchEvent(event);
+
+      stopVideo(); // Останавливаем видео поток
+    });
+}
+
+    
+      // Функция для отображения файла
+function showFile() {
+    const fileType = file.type;
+    const validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    
+    if (validExtensions.includes(fileType)) {
+        const fileReader = new FileReader();
+        
+        fileReader.onload = () => {
+            const fileURL = fileReader.result;
+            const imgTag = `<img src="${fileURL}" alt="image">`; 
+            dropArea.innerHTML = imgTag; // Добавляем изображение в область
+        }
+        fileReader.readAsDataURL(file);
+    } else {
+        alert("This is not an Image File!");
+        dropArea.classList.remove("active");
+        dragText.textContent = "Drag & Drop to Upload File";
+    }
+}
+    
+      function stopVideo() {
+        const stream = video.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+        video.style.display = "none";
+        captureButton.style.display = "none";
+      }
+    
+// Если пользователь перетаскивает файл над областью
+dropArea.addEventListener("dragover", (event) => {
+    event.preventDefault(); // Предотвращение стандартного поведения
+    dropArea.classList.add("active");
+    dragText.textContent = "Release to Upload File";
+});
+    
+// Если пользователь покидает область перетаскивания
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("active");
+    dragText.textContent = "Drag & Drop to Upload File";
+});
+    
+      // Если пользователь сбрасывает файл на область
+dropArea.addEventListener("drop", (event) => {
+    event.preventDefault(); // Предотвращение стандартного поведения
+    file = event.dataTransfer.files[0];
+
+    // Создаем объект DataTransfer для манипуляции с input[type="file"]
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    input.files = dataTransfer.files; // Устанавливаем файл в input[type="file"]
+
+    // Эмулируем событие change, чтобы обработчик считал, что файл был добавлен через интерфейс
+    const eventChange = new Event('change', { bubbles: true });
+    input.dispatchEvent(eventChange);
+
+    // showFile(); // Вызываем функцию показа файла
+});
+    </script>
+    
+    
+
+  </body>
+</html>
